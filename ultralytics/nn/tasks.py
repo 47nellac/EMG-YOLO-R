@@ -40,6 +40,7 @@ from ultralytics.nn.modules import (
     CBLinear,
     Classify,
     Concat,
+    MAM,
     Conv,
     Conv2,
     ConvTranspose,
@@ -1465,6 +1466,8 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
         elif m is torch.nn.BatchNorm2d:
             args = [ch[f]]
         elif m is Concat:
+            c2 = sum(ch[x] for x in f)
+        elif m is MAM:
             c2 = sum(ch[x] for x in f)
         elif m in frozenset(
             {Detect, WorldDetect, YOLOEDetect, Segment, YOLOESegment, Pose, OBB, ImagePoolingAttn, v10Detect}
