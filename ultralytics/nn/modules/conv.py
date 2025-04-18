@@ -687,21 +687,33 @@ class Concat(nn.Module):
 
 class MAM(nn.Module):
     """
-    Concatenate a list of tensors along specified dimension.
+    Attempts to capture certain features (long, wide) with better detail(?)
+    Reconstructed from paper, may not be accurate
 
     Attributes:
-        d (int): Dimension along which to concatenate tensors.
+        k (int): Kernel Size (Edit later)
     """
 
-    def __init__(self, dimension=1):
+    def __init__(self, c1, c2, k=5):
         """
-        Initialize Concat module.
+        Initialize MAM module.
 
         Args:
-            dimension (int): Dimension along which to concatenate tensors.
+            c1 (int): Input channels.
+            c2 (int): Output channels.
+            k (int): Kernel Size (Edit later)
         """
         super().__init__()
-        self.d = dimension
+        c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)
+        self.k = k
+        self.dw1 = DWConv(c1, c_, k, 5, 5)
+        self.dw2 = DWConv(c_, c_, k, 1, 7)
+        self.dw3 = DWConv(c_, c_, k, 7, 1)
+        self.dw2 = DWConv(c_, c_, k, 1, 11)
+        self.dw3 = DWConv(c_, c_, k, 11, 1)
+        self.dw2 = DWConv(c_, c_, k, 1, 21)
+        self.dw3 = DWConv(c_, c_, k, 21, 1)
+        self.add = 
 
     def forward(self, x):
         """
