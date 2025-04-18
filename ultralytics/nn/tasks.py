@@ -41,6 +41,7 @@ from ultralytics.nn.modules import (
     Classify,
     Concat,
     MAM,
+    EMCM,
     C2fEMCM
     Conv,
     Conv2,
@@ -1470,6 +1471,8 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
         elif m is Concat:
             c2 = sum(ch[x] for x in f)
         elif m is MAM:
+            c2 = sum(ch[x] for x in f)
+        elif m is EMCM:
             c2 = sum(ch[x] for x in f)
         elif m is C2fEMCM:
             c2 = sum(ch[x] for x in f)
