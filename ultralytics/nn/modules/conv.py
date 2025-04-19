@@ -816,21 +816,29 @@ class C2fEMCM(nn.Module):
 
 class CSPStage(nn.Module):
     """
-    Concatenate a list of tensors along specified dimension.
+    Update description later
 
     Attributes:
-        d (int): Dimension along which to concatenate tensors.
+        
     """
 
-    def __init__(self, dimension=1):
+    def __init__(self, c1, c2, k=5, numloops=3):
         """
-        Initialize Concat module.
+        Initialize CSPStage module.
 
         Args:
-            dimension (int): Dimension along which to concatenate tensors.
+        number of RepConv->conv-> loops
+            
         """
         super().__init__()
-        self.d = dimension
+        c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)    
+        self.numloops = numloops
+        self.conv1 = Conv(c1, c_, k, 1, 1) # supposed to be 1x1 but definitely not set up correctly yet
+        self.conv2 = Conv(c1, c_, k, 1, 1) # supposed to be 1x1 but definitely not set up correctly yet
+        self.conv3 = Conv(c_, c_, k, 1, 1)
+        self.repconv = RepConv(c_, c_, k, 3, 3) # supposed to be 3x3
+        # tbh the two separate 1x1 convolutions seem redundant but w/e
+        
 
     def forward(self, x):
         """
@@ -842,7 +850,16 @@ class CSPStage(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
-        return torch.cat(x, self.d)
+        concatlist = [self.conv1(x)]
+        alpha = self.conv2(x)
+        firstloop = self.conv3(self.repconv(alpha)) + alpha
+        alpha = firstloop
+        concatlist.append(alpha)
+        for _ in range(self.numloops):
+            firstloop = self.conv3(self.repconv(alpha)) + alpha
+            alpha = firstloop
+            concatlist.append(alpha)
+        return torch.cat(concatlist) 
 
 class Index(nn.Module):
     """
