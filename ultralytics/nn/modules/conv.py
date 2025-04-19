@@ -737,25 +737,32 @@ class MAM(nn.Module):
 
 class EMCM(nn.Module):
     """
-    Concatenate a list of tensors along specified dimension.
+    Part of C2f-EMCM
 
     Attributes:
-        d (int): Dimension along which to concatenate tensors.
+        
     """
 
-    def __init__(self, dimension=1):
+    def __init__(self, self, c1, c2, k=5):
         """
-        Initialize Concat module.
+        Initialize EMCM module.
 
         Args:
-            dimension (int): Dimension along which to concatenate tensors.
+            
         """
         super().__init__()
-        self.d = dimension
+        c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)
+        self.conv1 = Conv(c1, c_, k, 1, 1) # supposed to be 1x1 but definitely not set up correctly yet
+        self.conv2 = Conv(c_, c_, k, 1, 1) # supposed to be 1x1 Conv
+        self.conv3 = Conv(c_, c_, k, 3, 3) # supposed to be 3x3 Conv
+        self.conv4 = Conv(c_, c_, k, 5, 5) # supposed to be 5x5 Conv
+        self.conv5 = Conv(c_, c_, k, 7, 7) # supposed to be 7x7 Conv
+        
+        self.mam = MAM(c_, c2, k)
 
     def forward(self, x):
         """
-        Concatenate input tensors along specified dimension.
+        Super inaccurate, fix later
 
         Args:
             x (List[torch.Tensor]): List of input tensors.
@@ -763,7 +770,8 @@ class EMCM(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
-        return torch.cat(x, self.d)
+        s = torch.split(conv1(x), [1, 3, 5, 7]); # Split for 1x1, 3x3, 5x5, and 7x7 convolutions
+        return self.MAM(torch.cat(conv2(s[0]), conv3(s[1]), conv4(s[2]), conv5(s[3])))
 
 
 class C2fEMCM(nn.Module):
