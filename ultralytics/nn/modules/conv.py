@@ -722,6 +722,7 @@ class MAM(nn.Module):
 
     def forward(self, x):
         """
+        //Inaccurate description, update later
         Concatenate input tensors along specified dimension.
 
         Args:
@@ -730,7 +731,9 @@ class MAM(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
-        return torch.cat(x, self.d)
+        alpha = self.dw1(x)
+        beta = self.dw3(self.dw2(alpha)) + self.dw5(self.dw4(alpha)) + self.dw7(self.dw6(alpha)) + alpha
+        return self.sigmoid(self.conv2d(self.ap(self.mp(self.conv(beta) * alpha))))
 
 class EMCM(nn.Module):
     """
