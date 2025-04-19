@@ -743,7 +743,7 @@ class EMCM(nn.Module):
         
     """
 
-    def __init__(self, self, c1, c2, k=5):
+    def __init__(self, c1, c2, k=5):
         """
         Initialize EMCM module.
 
@@ -776,33 +776,42 @@ class EMCM(nn.Module):
 
 class C2fEMCM(nn.Module):
     """
-    Concatenate a list of tensors along specified dimension.
+    Inaccurate desc, fix later
 
     Attributes:
-        d (int): Dimension along which to concatenate tensors.
+        
     """
 
-    def __init__(self, dimension=1):
+    def __init__(self, c1, c2, k=5, numEMCM=3):
         """
-        Initialize Concat module.
+        Initialize C2fEMCM module.
+        Unsure how many EMCMs were included in original paper, so that's one of the things
+        I can experiment with for accuracy
 
         Args:
-            dimension (int): Dimension along which to concatenate tensors.
+            
         """
         super().__init__()
-        self.d = dimension
+        c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)       
+        self.numEMCM = numECMCM
+        self.conv1 = Conv(c1, c_, k, 1, 1) # supposed to be 1x1 but definitely not set up correctly yet
+        self.conv2 = Conv(c_, c2, k, 1, 1) # supposed to be 1x1 but definitely not set up correctly yet 
+        self.emcm = EMCM(c_ * 2, c_, k, 1, 1) # not correct inputs, don't care rn
+        
 
     def forward(self, x):
         """
-        Concatenate input tensors along specified dimension.
+        Not accurate yet, revisit
 
         Args:
-            x (List[torch.Tensor]): List of input tensors.
+           
 
         Returns:
-            (torch.Tensor): Concatenated tensor.
+            
         """
-        return torch.cat(x, self.d)
+        alpha = torch.split(self.conv1(x), [1, 1])
+        alpha[0].extend(self.m(alpha[0][-1], alpha[1]) for _ in range(self.numEMCM))
+        return self.conv2(torch.cat(alpha[1], alpha[0])) # put all the EMCMs back together again (???)
 
 
 class CSPStage(nn.Module):
