@@ -42,7 +42,7 @@ from ultralytics.nn.modules import (
     Concat,
     MAM,
     EMCM,
-    C2fEMCM
+    C2fEMCM,
     Conv,
     Conv2,
     ConvTranspose,
