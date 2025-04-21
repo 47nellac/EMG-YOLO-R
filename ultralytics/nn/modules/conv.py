@@ -796,11 +796,11 @@ class C2fEMCM(nn.Module):
             e: expansion ratio (copied from C2f's implementation, used similarly
         """
         super().__init__()
-        c_ = int(c2 * e) # Hidden channels (don't entirely understand how this works.)       
+        self.c = int(c2 * e) # Hidden channels (don't entirely understand how this works.)       
         self.numEMCM = numEMCM
-        self.conv1 = Conv(c1, 2 * c_, 1, 1) # Copied from C2f
-        self.conv2 = Conv((1 + numEMCM) * c_, c2, 1, 1) # based on C2f: each ECMCM + the original split input
-        self.emcm = EMCM(c_, c_, k) # possibly set up more correctly
+        self.conv1 = Conv(c1, 2 * self.c, 1, 1) # Copied from C2f
+        self.conv2 = Conv((1 + numEMCM) * self.c, c2, 1) # based on C2f: each ECMCM + the original split input
+        self.emcm = EMCM(self.c, self.c, k) # possibly set up more correctly
         
 
     def forward(self, x):
@@ -813,7 +813,7 @@ class C2fEMCM(nn.Module):
         Returns:
             
         """
-        alpha = torch.split(self.conv1(x), [1, 1])
+        alpha = self.conv1(x).split((self.c, self.c), 1)
         alpha[0].extend(self.m(alpha[0][-1], alpha[1]) for _ in range(self.numEMCM))
         return self.conv2(torch.cat(alpha[1], alpha[0])) # put all the EMCMs back together again (???)
 
