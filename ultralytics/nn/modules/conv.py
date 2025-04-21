@@ -782,21 +782,25 @@ class C2fEMCM(nn.Module):
         
     """
 
-    def __init__(self, c1, c2, numEMCM=3, k=5):
+    def __init__(self, c1, c2, numEMCM=1, k=5, e=0.5):
         """
         Initialize C2fEMCM module.
         Unsure how many EMCMs were included in original paper, so that's one of the things
         I can experiment with for accuracy
 
         Args:
-            
+            c1: number of input channels
+            c2: number of output channels
+            numEMCM: how many EMCM modules are used
+            k: kernel size for the EMCM modules (currently set up so they all have the same size kernels)
+            e: expansion ratio (copied from C2f's implementation, used similarly
         """
         super().__init__()
-        c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)       
+        c_ = int(c2 * e) # Hidden channels (don't entirely understand how this works.)       
         self.numEMCM = numEMCM
-        self.conv1 = Conv(c1, c_, 1) # supposed to be 1x1 but definitely not set up correctly yet
-        self.conv2 = Conv(c_, c2, 1) # supposed to be 1x1 but definitely not set up correctly yet 
-        self.emcm = EMCM(c_ * 2, c_, k) # not correct inputs, don't care rn
+        self.conv1 = Conv(c1, 2 * c_, 1, 1) # Copied from C2f
+        self.conv2 = Conv((2 + n) * self.c, c2, 1) # copied from C2f
+        self.emcm = EMCM(c_, c_, k) # possibly set up more correctly
         
 
     def forward(self, x):
