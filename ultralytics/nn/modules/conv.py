@@ -799,7 +799,7 @@ class C2fEMCM(nn.Module):
         c_ = int(c2 * e) # Hidden channels (don't entirely understand how this works.)       
         self.numEMCM = numEMCM
         self.conv1 = Conv(c1, 2 * c_, 1, 1) # Copied from C2f
-        self.conv2 = Conv((2 + numEMCM) * self.c, c2, 1) # copied from C2f
+        self.conv2 = Conv((2 + numEMCM) * c_, c2, 1) # copied from C2f
         self.emcm = EMCM(c_, c_, k) # possibly set up more correctly
         
 
