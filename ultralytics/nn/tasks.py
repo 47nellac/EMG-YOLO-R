@@ -1472,13 +1472,17 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
         elif m is Concat:
             c2 = sum(ch[x] for x in f)
         elif m is MAM:
-            c2 = sum(ch[x] for x in f)
+            c1, c2 = ch[f], args[0]
         elif m is EMCM:
-            c2 = sum(ch[x] for x in f)
+            c1, c2 = ch[f], args[0]
         elif m is C2fEMCM:
-            c2 = sum(ch[x] for x in f)
+            c1, c2 = ch[f], args[0]
+            args.insert(2, n)  # number of repeats, copied from above (handles the repeated EMCMs)
+            n = 1
         elif m is CSPStage:
-            c2 = sum(ch[x] for x in f)
+            c1, c2 = ch[f], args[0]
+            args.insert(2, n)  # number of repeats, copied from above (handles the repeated loops)
+            n = 1
         elif m in frozenset(
             {Detect, WorldDetect, YOLOEDetect, Segment, YOLOESegment, Pose, OBB, ImagePoolingAttn, v10Detect}
         ):
