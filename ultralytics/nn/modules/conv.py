@@ -707,17 +707,17 @@ class MAM(nn.Module):
         super().__init__()
         c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)
         self.k = k
-        self.dw1 = DWConv(c1, c_, k, 5, 5)
-        self.dw2 = DWConv(c_, c_, k, 1, 7)
-        self.dw3 = DWConv(c_, c_, k, 7, 1)
-        self.dw4 = DWConv(c_, c_, k, 1, 11)
-        self.dw5 = DWConv(c_, c_, k, 11, 1)
-        self.dw6 = DWConv(c_, c_, k, 1, 21)
-        self.dw7 = DWConv(c_, c_, k, 21, 1)
-        self.conv = Conv(c_, c_, k, 1, None, 1, 1);
+        self.dw1 = DWConv(c1, c_, 5)       # 5x5 DWConv
+        self.dw2 = DWConv(c_, c_, (1, 7))  # 1x7 DWConv
+        self.dw3 = DWConv(c_, c_, (7, 1))  # 7x1 DWConv
+        self.dw4 = DWConv(c_, c_, (1, 11)) # 1x11 DWConv
+        self.dw5 = DWConv(c_, c_, (11, 1)) # 11x1 DWConv
+        self.dw6 = DWConv(c_, c_, (1, 21)) # 1x21 DWConv
+        self.dw7 = DWConv(c_, c_, (21, 1)) # 21x1 DWConv
+        self.conv = Conv(c_, c_, 1);       # 1x1 Conv
         self.mp = nn.MaxPool2d(c_*c_, 1)
         self.ap = nn.AveragePool2d(c_*c_, 1)
-        self.conv2d = nn.Conv2d(c_*c_, c_, 7, 7) # supposed to be a 7x7 Conv2d
+        self.conv2d = nn.Conv2d(c_*c_, c_, 7) # supposed to be a 7x7 Conv2d
         self.sigmoid = nn.Sigmoid(c_, c2)
 
     def forward(self, x):
@@ -752,11 +752,11 @@ class EMCM(nn.Module):
         """
         super().__init__()
         c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)
-        self.conv1 = Conv(c1, c_, k, 1, 1) # supposed to be 1x1 but definitely not set up correctly yet
-        self.conv2 = Conv(c_, c_, k, 1, 1) # supposed to be 1x1 Conv
-        self.conv3 = Conv(c_, c_, k, 3, 3) # supposed to be 3x3 Conv
-        self.conv4 = Conv(c_, c_, k, 5, 5) # supposed to be 5x5 Conv
-        self.conv5 = Conv(c_, c_, k, 7, 7) # supposed to be 7x7 Conv
+        self.conv1 = Conv(c1, c_, 1) # supposed to be 1x1, may be set up correctly now
+        self.conv2 = Conv(c_, c_, 1) # supposed to be 1x1 Conv
+        self.conv3 = Conv(c_, c_, 3) # supposed to be 3x3 Conv
+        self.conv4 = Conv(c_, c_, 5) # supposed to be 5x5 Conv
+        self.conv5 = Conv(c_, c_, 7) # supposed to be 7x7 Conv
         
         self.mam = MAM(c_, c2, k)
 
@@ -770,7 +770,7 @@ class EMCM(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
-        s = torch.split(conv1(x), [1, 3, 5, 7]); # Split for 1x1, 3x3, 5x5, and 7x7 convolutions
+        s = torch.split(conv1(x), [1, 3, 5, 7]); # Split for 1x1, 3x3, 5x5, and 7x7 convolutions, probably very wrong
         return self.MAM(torch.cat(conv2(s[0]), conv3(s[1]), conv4(s[2]), conv5(s[3])))
 
 
@@ -782,7 +782,7 @@ class C2fEMCM(nn.Module):
         
     """
 
-    def __init__(self, c1, c2, k=5, numEMCM=3):
+    def __init__(self, c1, c2, numEMCM=3, k=5):
         """
         Initialize C2fEMCM module.
         Unsure how many EMCMs were included in original paper, so that's one of the things
@@ -794,9 +794,9 @@ class C2fEMCM(nn.Module):
         super().__init__()
         c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)       
         self.numEMCM = numECMCM
-        self.conv1 = Conv(c1, c_, k, 1, 1) # supposed to be 1x1 but definitely not set up correctly yet
-        self.conv2 = Conv(c_, c2, k, 1, 1) # supposed to be 1x1 but definitely not set up correctly yet 
-        self.emcm = EMCM(c_ * 2, c_, k, 1, 1) # not correct inputs, don't care rn
+        self.conv1 = Conv(c1, c_, 1) # supposed to be 1x1 but definitely not set up correctly yet
+        self.conv2 = Conv(c_, c2, 1) # supposed to be 1x1 but definitely not set up correctly yet 
+        self.emcm = EMCM(c_ * 2, c_, k) # not correct inputs, don't care rn
         
 
     def forward(self, x):
@@ -822,7 +822,7 @@ class CSPStage(nn.Module):
         
     """
 
-    def __init__(self, c1, c2, k=5, numloops=3):
+    def __init__(self, c1, c2, numloops=3, k=5):
         """
         Initialize CSPStage module.
 
@@ -833,10 +833,10 @@ class CSPStage(nn.Module):
         super().__init__()
         c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)    
         self.numloops = numloops
-        self.conv1 = Conv(c1, c_, k, 1, 1) # supposed to be 1x1 but definitely not set up correctly yet
-        self.conv2 = Conv(c1, c_, k, 1, 1) # supposed to be 1x1 but definitely not set up correctly yet
-        self.conv3 = Conv(c_, c_, k, 1, 1)
-        self.repconv = RepConv(c_, c_, k, 3, 3) # supposed to be 3x3
+        self.conv1 = Conv(c1, c_, 1) # supposed to be 1x1, may be set up correctly now
+        self.conv2 = Conv(c1, c_, 1) # supposed to be 1x1
+        self.conv3 = Conv(c_, c_, 1) # supposed to be 1x1
+        self.repconv = RepConv(c_, c_, 3) # supposed to be 3x3
         # tbh the two separate 1x1 convolutions seem redundant but w/e
         
 
@@ -855,7 +855,7 @@ class CSPStage(nn.Module):
         firstloop = self.conv3(self.repconv(alpha)) + alpha
         alpha = firstloop
         concatlist.append(alpha)
-        for _ in range(self.numloops):
+        for _ in range(self.numloops - 1): # Default to 1 total, may be more; n should be equal to num loops
             firstloop = self.conv3(self.repconv(alpha)) + alpha
             alpha = firstloop
             concatlist.append(alpha)
