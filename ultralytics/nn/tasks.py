@@ -1481,6 +1481,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             n = 1
         elif m is CSPStage:
             c1, c2 = ch[f], args[0]
+	    args.insert(0, c1) # put c1 where it belongs; c2 is then at the 1 index 
             args.insert(2, n)  # number of repeats, copied from above (handles the repeated loops)
             n = 1
         elif m in frozenset(
