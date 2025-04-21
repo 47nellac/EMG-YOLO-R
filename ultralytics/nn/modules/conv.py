@@ -793,7 +793,7 @@ class C2fEMCM(nn.Module):
         """
         super().__init__()
         c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)       
-        self.numEMCM = numECMCM
+        self.numEMCM = numEMCM
         self.conv1 = Conv(c1, c_, 1) # supposed to be 1x1 but definitely not set up correctly yet
         self.conv2 = Conv(c_, c2, 1) # supposed to be 1x1 but definitely not set up correctly yet 
         self.emcm = EMCM(c_ * 2, c_, k) # not correct inputs, don't care rn
