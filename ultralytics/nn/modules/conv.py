@@ -797,7 +797,7 @@ class C2fEMCM(nn.Module):
         """
         super().__init__()
         self.c = int(c2 * e) # Hidden channels (don't entirely understand how this works.)       
-        self.numEMCM = numEMCM
+        #self.numEMCM = numEMCM
         self.conv1 = Conv(c1, 2 * self.c, 1, 1) # Copied from C2f
         self.conv2 = Conv((1 + numEMCM) * self.c, c2, 1) # based on C2f: each ECMCM + the original split input
         self.emcms = nn.ModuleList(EMCM(self.c, self.c, k) for _ in range(self.numEMCM)) # based off of c2f
@@ -816,7 +816,7 @@ class C2fEMCM(nn.Module):
         """
         alpha = self.conv1(x).split((self.c, self.c), 1) #based on C2f
         alpha = [alpha[0], alpha[1]]
-        alpha.extend(self.emcms(alpha[-1]) for _ in range(self.numEMCM))
+        alpha.extend(emcm(alpha[-1]) for emcm in self.emcms)
         return self.conv2(torch.cat(alpha, 1)) # put all the EMCMs back together again (???)
 
 
