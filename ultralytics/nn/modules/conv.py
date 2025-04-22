@@ -692,29 +692,26 @@ class MAM(nn.Module):
     Reconstructed from paper, may not be accurate
 
     Attributes:
-        k (int): Kernel Size (Edit later)
+        
     """
 
-    def __init__(self, c1, c2, k=5):
+    def __init__(self, c1, c2):
         """
         Initialize MAM module.
 
         Args:
             c1 (int): Input channels.
             c2 (int): Output channels.
-            k (int): Kernel Size (Edit later)
         """
         super().__init__()
-        c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)
-        self.k = k
-        self.dw1 = DWConv(c1, c1, (5,5))       # 5x5 DWConv
-        self.dw2 = DWConv(c1, c1, (1, 7))  # 1x7 DWConv
-        self.dw3 = DWConv(c1, c1, (7, 1))  # 7x1 DWConv
-        self.dw4 = DWConv(c1, c1, (1, 11)) # 1x11 DWConv
-        self.dw5 = DWConv(c1, c1, (11, 1)) # 11x1 DWConv
-        self.dw6 = DWConv(c1, c1, (1, 21)) # 1x21 DWConv
-        self.dw7 = DWConv(c1, c1, (21, 1)) # 21x1 DWConv
-        self.conv = Conv(c1, c1, 1);       # 1x1 Conv
+        self.dw1 = DWConv(c1, c2, (5,5))       # 5x5 DWConv ... as far as I can tell, this DWConv is the only place the size changes...and it makes the size go UP
+        self.dw2 = DWConv(c2, c2, (1, 7))  # 1x7 DWConv
+        self.dw3 = DWConv(c2, c2, (7, 1))  # 7x1 DWConv
+        self.dw4 = DWConv(c2, c2, (1, 11)) # 1x11 DWConv
+        self.dw5 = DWConv(c2, c2, (11, 1)) # 11x1 DWConv
+        self.dw6 = DWConv(c2, c2, (1, 21)) # 1x21 DWConv
+        self.dw7 = DWConv(c2, c2, (21, 1)) # 21x1 DWConv
+        self.conv = Conv(c2, c2, 1);       # 1x1 Conv
         
         # As far as I can calculate, there are no changes at ALL in channels from the first DWConv up to the 1x1 Conv
         
@@ -753,7 +750,7 @@ class EMCM(nn.Module):
         
     """
 
-    def __init__(self, c1, c2, k=5):
+    def __init__(self, c1, c2):
         """
         Initialize EMCM module.
 
@@ -769,7 +766,7 @@ class EMCM(nn.Module):
         self.conv4 = Conv(self.c_split, self.c_split, 5) # supposed to be 5x5 Conv
         self.conv5 = Conv(self.c_split, self.c_split, 7) # supposed to be 7x7 Conv
         
-        self.mam = MAM(self.c, c2, k)
+        self.mam = MAM(self.c, c2)
 
     def forward(self, x):
         """
@@ -793,7 +790,7 @@ class C2fEMCM(nn.Module):
         
     """
 
-    def __init__(self, c1, c2, numEMCM=1, k=5, e=0.5):
+    def __init__(self, c1, c2, numEMCM=1, e=0.5):
         """
         Initialize C2fEMCM module.
         Unsure how many EMCMs were included in original paper, so that's one of the things
@@ -803,16 +800,13 @@ class C2fEMCM(nn.Module):
             c1: number of input channels
             c2: number of output channels
             numEMCM: how many EMCM modules are used
-            k: kernel size for the EMCM modules (currently set up so they all have the same size kernels)
             e: expansion ratio (copied from C2f's implementation, used similarly
         """
         super().__init__()
-        self.c = int(c2 * e) # Hidden channels (don't entirely understand how this works.)       
-        #self.numEMCM = numEMCM
+        self.c = int(c2 * e) # Hidden channels (don't entirely understand how this works.)   
         self.conv1 = Conv(c1, 2 * self.c, 1, 1) # Copied from C2f
         self.conv2 = Conv((1 + numEMCM) * self.c, c2, 1) # based on C2f: each ECMCM + the original split input
-        self.emcms = nn.ModuleList(EMCM(self.c, self.c, k) for _ in range(numEMCM)) # based off of c2f
-        # self.emcm = EMCM(self.c, self.c, k) # possibly set up more correctly
+        self.emcms = nn.ModuleList(EMCM(self.c, self.c) for _ in range(numEMCM)) # based off of c2f
         
 
     def forward(self, x):
@@ -839,7 +833,7 @@ class CSPStage(nn.Module):
         
     """
 
-    def __init__(self, c1, c2, numloops=3, k=5):
+    def __init__(self, c1, c2, numloops=3):
         """
         Initialize CSPStage module.
 
