@@ -707,7 +707,7 @@ class MAM(nn.Module):
         super().__init__()
         c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)
         self.k = k
-        self.dw1 = DWConv(c1, c_, 5)       # 5x5 DWConv
+        self.dw1 = DWConv(c1, c_, (5,5))       # 5x5 DWConv
         self.dw2 = DWConv(c_, c_, (1, 7))  # 1x7 DWConv
         self.dw3 = DWConv(c_, c_, (7, 1))  # 7x1 DWConv
         self.dw4 = DWConv(c_, c_, (1, 11)) # 1x11 DWConv
