@@ -715,9 +715,9 @@ class MAM(nn.Module):
         self.dw6 = DWConv(c_, c_, (1, 21)) # 1x21 DWConv
         self.dw7 = DWConv(c_, c_, (21, 1)) # 21x1 DWConv
         self.conv = Conv(c_, c_, 1);       # 1x1 Conv
-        self.mp = nn.MaxPool2d(c_*c_, 1)
-        self.ap = nn.AveragePool2d(c_*c_, 1)
-        self.conv2d = nn.Conv2d(c_*c_, c_, 7) # supposed to be a 7x7 Conv2d
+        self.mp = nn.MaxPool2d(3) # Unsure of proper pool window, defaulting to 3
+        self.ap = nn.AvgPool2d(3) # Unsure of proper pool window, defaulting to 3
+        self.conv2d = nn.Conv2d(c_, c_, 7) # supposed to be a 7x7 Conv2d
         self.sigmoid = nn.Sigmoid(c_, c2)
 
     def forward(self, x):
