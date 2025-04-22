@@ -800,7 +800,7 @@ class C2fEMCM(nn.Module):
         #self.numEMCM = numEMCM
         self.conv1 = Conv(c1, 2 * self.c, 1, 1) # Copied from C2f
         self.conv2 = Conv((1 + numEMCM) * self.c, c2, 1) # based on C2f: each ECMCM + the original split input
-        self.emcms = nn.ModuleList(EMCM(self.c, self.c, k) for _ in range(self.numEMCM)) # based off of c2f
+        self.emcms = nn.ModuleList(EMCM(self.c, self.c, k) for _ in range(numEMCM)) # based off of c2f
         # self.emcm = EMCM(self.c, self.c, k) # possibly set up more correctly
         
 
