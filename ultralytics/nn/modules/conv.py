@@ -726,7 +726,7 @@ class MAM(nn.Module):
         # self.conv2d = nn.Conv2d(c_, c2, 7) # supposed to be a 7x7 Conv2d
         # self.sigmoid = nn.Sigmoid() # Sigmoid does not change the number of channels, so should be at *w/e* by conv2d
         self.spatialattn = SpatialAttention(7)
-        print("Initialized MAM module")
+        print('Initialized MAM module with i/o ({c1}, {c2})')
         
     def forward(self, x):
         """
@@ -769,7 +769,7 @@ class EMCM(nn.Module):
         self.conv5 = Conv(self.c_split, self.c_split, 7) # supposed to be 7x7 Conv
         
         self.mam = MAM(self.c, c2)
-        print("Initialized EMCM module")
+        print('Initialized EMCM module with i/o ({c1}, {c2})')
 
     def forward(self, x):
         """
@@ -813,7 +813,7 @@ class C2fEMCM(nn.Module):
         self.conv2 = Conv((2 + numEMCM) * self.c, c2, 1) # based on C2f: each ECMCM + the original split input
         print(numEMCM)
         self.emcms = nn.ModuleList(EMCM(self.c, self.c) for _ in range(numEMCM)) # based off of c2f
-        print("Initialized C2fEMCM module")
+        print(f'Initialized C2fEMCM module with i/o ({c1}, {c2})')
         
 
     def forward(self, x):
@@ -857,7 +857,7 @@ class CSPStage(nn.Module):
         self.conv3 = Conv(c1, c1, 1) # supposed to be 1x1
         self.repconv = RepConv(c1, c1, 3) # supposed to be 3x3
         # tbh the two separate 1x1 convolutions seem redundant but w/e
-        print("Initialized CSPStage module")
+        print('Initialized CSPStage module with i/o ({c1}, {c2})')
         
 
     def forward(self, x):
