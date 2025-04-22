@@ -726,6 +726,7 @@ class MAM(nn.Module):
         # self.conv2d = nn.Conv2d(c_, c2, 7) # supposed to be a 7x7 Conv2d
         # self.sigmoid = nn.Sigmoid() # Sigmoid does not change the number of channels, so should be at *w/e* by conv2d
         self.spatialattn = SpatialAttention(7)
+        print("Initialized MAM module")
         
     def forward(self, x):
         """
@@ -740,6 +741,7 @@ class MAM(nn.Module):
         """
         alpha = self.dw1(x)
         beta = self.dw3(self.dw2(alpha)) + self.dw5(self.dw4(alpha)) + self.dw7(self.dw6(alpha)) + alpha
+        print("End of MAM module") 
         return self.spatialattn(self.conv(beta) * alpha)
 
 class EMCM(nn.Module):
@@ -767,6 +769,7 @@ class EMCM(nn.Module):
         self.conv5 = Conv(self.c_split, self.c_split, 7) # supposed to be 7x7 Conv
         
         self.mam = MAM(self.c, c2)
+        print("Initialized EMCM module")
 
     def forward(self, x):
         """
@@ -779,6 +782,8 @@ class EMCM(nn.Module):
             (torch.Tensor): Concatenated tensor.
         """
         s = self.conv1(x).split((self.c_split, self.c_split, self.c_split, self.c_split), 1); # Split for 1x1, 3x3, 5x5, and 7x7 convolutions, probably very wrong
+
+        print("End of EMCM module") 
         return self.mam(torch.cat((self.conv2(s[0]), self.conv3(s[1]), self.conv4(s[2]), self.conv5(s[3])), 1))
 
 
@@ -807,6 +812,7 @@ class C2fEMCM(nn.Module):
         self.conv1 = Conv(c1, 2 * self.c, 1, 1) # Copied from C2f
         self.conv2 = Conv((2 + numEMCM) * self.c, c2, 1) # based on C2f: each ECMCM + the original split input
         self.emcms = nn.ModuleList(EMCM(self.c, self.c) for _ in range(numEMCM)) # based off of c2f
+        print("Initialized C2fEMCM module")
         
 
     def forward(self, x):
@@ -822,6 +828,7 @@ class C2fEMCM(nn.Module):
         alpha = self.conv1(x).split((self.c, self.c), 1) #based on C2f
         alpha = [alpha[0], alpha[1]]
         alpha.extend(emcm(alpha[-1]) for emcm in self.emcms)
+        print("End of C2fEMCM module") 
         return self.conv2(torch.cat(alpha, 1)) # put all the EMCMs back together again (???)
 
 
@@ -842,13 +849,14 @@ class CSPStage(nn.Module):
             
         """
         super().__init__()
-        c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)    
+        #c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)    
         self.numloops = numloops
-        self.conv1 = Conv(c1, c_, 1) # supposed to be 1x1, may be set up correctly now
-        self.conv2 = Conv(c1, c_, 1) # supposed to be 1x1
-        self.conv3 = Conv(c_, c_, 1) # supposed to be 1x1
-        self.repconv = RepConv(c_, c_, 3) # supposed to be 3x3
+        self.conv1 = Conv(c1, c1, 1) # supposed to be 1x1, may be set up correctly now
+        self.conv2 = Conv(c1, c1, 1) # supposed to be 1x1
+        self.conv3 = Conv(c1, c1, 1) # supposed to be 1x1
+        self.repconv = RepConv(c1, c1, 3) # supposed to be 3x3
         # tbh the two separate 1x1 convolutions seem redundant but w/e
+        print("Initialized CSPStage module")
         
 
     def forward(self, x):
@@ -870,6 +878,8 @@ class CSPStage(nn.Module):
             firstloop = self.conv3(self.repconv(alpha)) + alpha
             alpha = firstloop
             concatlist.append(alpha)
+    
+        print("End of CSPStage module")            
         return torch.cat(concatlist) 
 
 class Index(nn.Module):
