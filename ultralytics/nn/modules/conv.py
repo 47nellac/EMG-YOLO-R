@@ -772,7 +772,7 @@ class EMCM(nn.Module):
             (torch.Tensor): Concatenated tensor.
         """
         s = self.conv1(x).split((self.c_split, self.c_split, self.c_split, self.c_split), 1); # Split for 1x1, 3x3, 5x5, and 7x7 convolutions, probably very wrong
-        return self.mam(torch.cat(self.conv2(s[0]), self.conv3(s[1]), self.conv4(s[2]), self.conv5(s[3]), 1))
+        return self.mam(torch.cat((self.conv2(s[0]), self.conv3(s[1]), self.conv4(s[2]), self.conv5(s[3])), 1))
 
 
 class C2fEMCM(nn.Module):
