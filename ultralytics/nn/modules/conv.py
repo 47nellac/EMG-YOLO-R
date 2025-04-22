@@ -69,6 +69,7 @@ class Conv(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+        print(f'Initialized Conv module with i/o ({c1}, {c2})')
 
     def forward(self, x):
         """
@@ -420,6 +421,7 @@ class RepConv(nn.Module):
         self.bn = nn.BatchNorm2d(num_features=c1) if bn and c2 == c1 and s == 1 else None
         self.conv1 = Conv(c1, c2, k, s, p=p, g=g, act=False)
         self.conv2 = Conv(c1, c2, 1, s, p=(p - k // 2), g=g, act=False)
+        print(f'Initialized RepConv module with i/o ({c1}, {c2})')
 
     def forward_fuse(self, x):
         """
@@ -726,7 +728,7 @@ class MAM(nn.Module):
         # self.conv2d = nn.Conv2d(c_, c2, 7) # supposed to be a 7x7 Conv2d
         # self.sigmoid = nn.Sigmoid() # Sigmoid does not change the number of channels, so should be at *w/e* by conv2d
         self.spatialattn = SpatialAttention(7)
-        print('Initialized MAM module with i/o ({c1}, {c2})')
+        print(f'Initialized MAM module with i/o ({c1}, {c2})')
         
     def forward(self, x):
         """
@@ -769,7 +771,7 @@ class EMCM(nn.Module):
         self.conv5 = Conv(self.c_split, self.c_split, 7) # supposed to be 7x7 Conv
         
         self.mam = MAM(self.c, c2)
-        print('Initialized EMCM module with i/o ({c1}, {c2})')
+        print(f'Initialized EMCM module with i/o ({c1}, {c2})')
 
     def forward(self, x):
         """
@@ -857,7 +859,7 @@ class CSPStage(nn.Module):
         self.conv3 = Conv(c1, c1, 1) # supposed to be 1x1
         self.repconv = RepConv(c1, c1, 3) # supposed to be 3x3
         # tbh the two separate 1x1 convolutions seem redundant but w/e
-        print('Initialized CSPStage module with i/o ({c1}, {c2})')
+        print(f'Initialized CSPStage module with i/o ({c1}, {c2})')
         
 
     def forward(self, x):
