@@ -707,19 +707,29 @@ class MAM(nn.Module):
         super().__init__()
         c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)
         self.k = k
-        self.dw1 = DWConv(c1, c_, (5,5))       # 5x5 DWConv
-        self.dw2 = DWConv(c_, c_, (1, 7))  # 1x7 DWConv
-        self.dw3 = DWConv(c_, c_, (7, 1))  # 7x1 DWConv
-        self.dw4 = DWConv(c_, c_, (1, 11)) # 1x11 DWConv
-        self.dw5 = DWConv(c_, c_, (11, 1)) # 11x1 DWConv
-        self.dw6 = DWConv(c_, c_, (1, 21)) # 1x21 DWConv
-        self.dw7 = DWConv(c_, c_, (21, 1)) # 21x1 DWConv
-        self.conv = Conv(c_, c_, 1);       # 1x1 Conv
-        self.mp = nn.MaxPool2d(3) # Unsure of proper pool window, defaulting to 3
-        self.ap = nn.AvgPool2d(3) # Unsure of proper pool window, defaulting to 3
-        self.conv2d = nn.Conv2d(c_, c2, 7) # supposed to be a 7x7 Conv2d
-        self.sigmoid = nn.Sigmoid() # Sigmoid does not change the number of channels, so should be at *w/e* by conv2d
-
+        self.dw1 = DWConv(c1, c1, (5,5))       # 5x5 DWConv
+        self.dw2 = DWConv(c1, c1, (1, 7))  # 1x7 DWConv
+        self.dw3 = DWConv(c1, c1, (7, 1))  # 7x1 DWConv
+        self.dw4 = DWConv(c1, c1, (1, 11)) # 1x11 DWConv
+        self.dw5 = DWConv(c1, c1, (11, 1)) # 11x1 DWConv
+        self.dw6 = DWConv(c1, c1, (1, 21)) # 1x21 DWConv
+        self.dw7 = DWConv(c1, c1, (21, 1)) # 21x1 DWConv
+        self.conv = Conv(c1, c1, 1);       # 1x1 Conv
+        
+        # As far as I can calculate, there are no changes at ALL in channels from the first DWConv up to the 1x1 Conv
+        
+        
+        # The paper seems to be not quite honest about the next section
+        # rather than actually using maxpool/avgpool/conv2d/sigmoid, it looks
+        # like it simply passed everything through the built-in SpatialAttention module
+        # as that one basically matches the paper's description exactly in every regard
+        # so I'm putting that here lol
+        # self.mp = nn.MaxPool2d(3) # Unsure of proper pool window, defaulting to 3
+        # self.ap = nn.AvgPool2d(3) # Unsure of proper pool window, defaulting to 3
+        # self.conv2d = nn.Conv2d(c_, c2, 7) # supposed to be a 7x7 Conv2d
+        # self.sigmoid = nn.Sigmoid() # Sigmoid does not change the number of channels, so should be at *w/e* by conv2d
+        self.spatialattn = SpatialAttention(7)
+        
     def forward(self, x):
         """
         //Inaccurate description, update later
@@ -733,7 +743,7 @@ class MAM(nn.Module):
         """
         alpha = self.dw1(x)
         beta = self.dw3(self.dw2(alpha)) + self.dw5(self.dw4(alpha)) + self.dw7(self.dw6(alpha)) + alpha
-        return self.sigmoid(self.conv2d(self.ap(self.mp(self.conv(beta) * alpha))))
+        return self.spatialattn(self.conv(beta) * alpha)
 
 class EMCM(nn.Module):
     """
