@@ -717,8 +717,8 @@ class MAM(nn.Module):
         self.conv = Conv(c_, c_, 1);       # 1x1 Conv
         self.mp = nn.MaxPool2d(3) # Unsure of proper pool window, defaulting to 3
         self.ap = nn.AvgPool2d(3) # Unsure of proper pool window, defaulting to 3
-        self.conv2d = nn.Conv2d(c_, c_, 7) # supposed to be a 7x7 Conv2d
-        self.sigmoid = nn.Sigmoid(c_, c2)
+        self.conv2d = nn.Conv2d(c_, c2, 7) # supposed to be a 7x7 Conv2d
+        self.sigmoid = nn.Sigmoid() # Sigmoid does not change the number of channels, so should be at *w/e* by conv2d
 
     def forward(self, x):
         """
