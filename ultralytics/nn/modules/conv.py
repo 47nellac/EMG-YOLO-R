@@ -752,11 +752,12 @@ class EMCM(nn.Module):
         """
         super().__init__()
         self.c = c1 // 2 # Hidden channels (don't entirely understand how this works.)
+        self.c_split = self.c // 4 # different hidden channels
         self.conv1 = Conv(c1, self.c, 1) # supposed to be 1x1, may be set up correctly now
-        self.conv2 = Conv(self.c, self.c, 1) # supposed to be 1x1 Conv
-        self.conv3 = Conv(self.c, self.c, 3) # supposed to be 3x3 Conv
-        self.conv4 = Conv(self.c, self.c, 5) # supposed to be 5x5 Conv
-        self.conv5 = Conv(self.c, self.c, 7) # supposed to be 7x7 Conv
+        self.conv2 = Conv(self.c_split, self.c_split, 1) # supposed to be 1x1 Conv
+        self.conv3 = Conv(self.c_split, self.c_split, 3) # supposed to be 3x3 Conv
+        self.conv4 = Conv(self.c_split, self.c_split, 5) # supposed to be 5x5 Conv
+        self.conv5 = Conv(self.c_split, self.c_split, 7) # supposed to be 7x7 Conv
         
         self.mam = MAM(self.c, c2, k)
 
@@ -770,7 +771,7 @@ class EMCM(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
-        s = self.conv1(x).split((self.c, self.c, self.c, self.c), 1); # Split for 1x1, 3x3, 5x5, and 7x7 convolutions, probably very wrong
+        s = self.conv1(x).split((self.c_split, self.c_split, self.c_split, self.c_split), 1); # Split for 1x1, 3x3, 5x5, and 7x7 convolutions, probably very wrong
         return self.MAM(torch.cat(conv2(s[0]), conv3(s[1]), conv4(s[2]), conv5(s[3]), 1))
 
 
