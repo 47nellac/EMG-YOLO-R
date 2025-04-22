@@ -811,6 +811,7 @@ class C2fEMCM(nn.Module):
         self.c = int(c2 * e) # Hidden channels (don't entirely understand how this works.)   
         self.conv1 = Conv(c1, 2 * self.c, 1, 1) # Copied from C2f
         self.conv2 = Conv((2 + numEMCM) * self.c, c2, 1) # based on C2f: each ECMCM + the original split input
+        print(numEMCM)
         self.emcms = nn.ModuleList(EMCM(self.c, self.c) for _ in range(numEMCM)) # based off of c2f
         print("Initialized C2fEMCM module")
         
