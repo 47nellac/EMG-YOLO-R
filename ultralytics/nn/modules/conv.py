@@ -881,12 +881,15 @@ class CSPStage(nn.Module):
         print(f'CSPStage received {x.size()}-size tensor')
         concatlist = [self.conv1(x)]
         alpha = self.conv2(x)
+        print(f'CSPStage alpha is {alpha.size()}-size tensor')
         firstloop = self.conv3(self.repconv(alpha)) + alpha
         alpha = firstloop
+        print(f'CSPStage alpha is {alpha.size()}-size tensor')
         concatlist.append(alpha)
         for _ in range(self.numloops - 1): # Default to 1 total, may be more; n should be equal to num loops
             firstloop = self.conv3(self.repconv(alpha)) + alpha
             alpha = firstloop
+            print(f'CSPStage alpha is {alpha.size()}-size tensor')
             concatlist.append(alpha)
     
         print("End of CSPStage module") 
