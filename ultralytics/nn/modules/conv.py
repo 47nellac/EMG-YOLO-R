@@ -747,8 +747,10 @@ class MAM(nn.Module):
         print(f'MAM received {x.size()}-size tensor')
         alpha = self.dw1(x)
         beta = self.dw3(self.dw2(alpha)) + self.dw5(self.dw4(alpha)) + self.dw7(self.dw6(alpha)) + alpha
-        print("End of MAM module") 
-        return self.spatialattn(self.conv(beta) * alpha)
+        #print("End of MAM module") 
+        x_out = self.spatialattn(self.conv(beta) * alpha)
+        print(f'MAM returned {x_out.size()}-size tensor')
+        return x_out
 
 class EMCM(nn.Module):
     """
@@ -790,8 +792,10 @@ class EMCM(nn.Module):
         print(f'EMCM received {x.size()}-size tensor')
         s = self.conv1(x).split((self.c_split, self.c_split, self.c_split, self.c_split), 1); # Split for 1x1, 3x3, 5x5, and 7x7 convolutions, probably very wrong
 
-        print("End of EMCM module") 
-        return self.mam(torch.cat((self.conv2(s[0]), self.conv3(s[1]), self.conv4(s[2]), self.conv5(s[3])), 1))
+        #print("End of EMCM module") 
+        x_out = self.mam(torch.cat((self.conv2(s[0]), self.conv3(s[1]), self.conv4(s[2]), self.conv5(s[3])), 1))
+        print(f'EMCM returned {x_out.size()}-size tensor')
+        return x_out
 
 
 class C2fEMCM(nn.Module):
@@ -837,8 +841,10 @@ class C2fEMCM(nn.Module):
         alpha = self.conv1(x).split((self.c, self.c), 1) #based on C2f
         alpha = [alpha[0], alpha[1]]
         alpha.extend(emcm(alpha[-1]) for emcm in self.emcms)
-        print("End of C2fEMCM module") 
-        return self.conv2(torch.cat(alpha, 1)) # put all the EMCMs back together again (???)
+        #print("End of C2fEMCM module") 
+        x_out = self.conv2(torch.cat(alpha, 1)) # put all the EMCMs back together again (???)
+        print(f'C2fEMCM returned {x_out.size()}-size tensor')
+        return x_out
 
 
 class CSPStage(nn.Module):
@@ -892,7 +898,7 @@ class CSPStage(nn.Module):
             print(f'CSPStage alpha is {alpha.size()}-size tensor')
             concatlist.append(alpha)
     
-        print("End of CSPStage module") 
+        #print("End of CSPStage module") 
         x_out = torch.cat(concatlist, 1)
         print(f'CSPStage returned {x_out.size()}-size tensor')
         return x_out 
