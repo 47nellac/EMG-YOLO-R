@@ -1475,7 +1475,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             c1, c2 = ch[f], args[0]
             if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output) # copied from base module section above
                           # turns out that the base modules use hyperparameters to modify how many channels are *actually* allowed, so my channels were not matching up 
-                c2 = make_divisible(min(c2, max_channels) * width, 8)
+                c2 = make_divisible(c2 * width, 8) not using min() or max-channels here because it was messing things up
             args = [c1, c2] # put c1 where it belongs; c2 is then at the 1 index 
         elif m is EMCM:
             c1, c2 = ch[f], args[0]
