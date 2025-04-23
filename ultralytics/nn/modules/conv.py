@@ -893,7 +893,7 @@ class CSPStage(nn.Module):
             concatlist.append(alpha)
     
         print("End of CSPStage module") 
-        x_out = torch.cat(concatlist)
+        x_out = torch.cat(concatlist, 1)
         print(f'CSPStage returned {x_out.size()}-size tensor')
         return x_out 
 
