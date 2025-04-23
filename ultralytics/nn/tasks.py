@@ -1473,19 +1473,29 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             c2 = sum(ch[x] for x in f)
         elif m is MAM:
             c1, c2 = ch[f], args[0]
-            args.insert(0, c1) # put c1 where it belongs; c2 is then at the 1 index 
+	    if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output) # copied from base module section above
+                          # turns out that the base modules use hyperparameters to modify how many channels are *actually* allowed, so my channels were not matching up 
+                c2 = make_divisible(min(c2, max_channels) * width, 8)
+            args = [c1, c2] # put c1 where it belongs; c2 is then at the 1 index 
         elif m is EMCM:
             c1, c2 = ch[f], args[0]
-            args.insert(0, c1) # put c1 where it belongs; c2 is then at the 1 index 
+	    if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output) # copied from base module section above
+                          # turns out that the base modules use hyperparameters to modify how many channels are *actually* allowed, so my channels were not matching up 
+                c2 = make_divisible(min(c2, max_channels) * width, 8)
+            args = [c1, c2] # put c1 where it belongs; c2 is then at the 1 index 
         elif m is C2fEMCM:
             c1, c2 = ch[f], args[0]
-            args.insert(0, c1) # put c1 where it belongs; c2 is then at the 1 index 
-            args.insert(2, n)  # number of repeats, copied from above (handles the repeated EMCMs)
+	    if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output) # copied from base module section above
+                          # turns out that the base modules use hyperparameters to modify how many channels are *actually* allowed, so my channels were not matching up 
+                c2 = make_divisible(min(c2, max_channels) * width, 8)
+            args = [c1, c2, n, *args[1:]] # put c1 where it belongs; c2 is then at the 1 index 
             n = 1
         elif m is CSPStage:
             c1, c2 = ch[f], args[0]
-            args.insert(0, c1) # put c1 where it belongs; c2 is then at the 1 index 
-            args.insert(2, n)  # number of repeats, copied from above (handles the repeated loops)
+	    if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output) # copied from base module section above
+                          # turns out that the base modules use hyperparameters to modify how many channels are *actually* allowed, so my channels were not matching up 
+                c2 = make_divisible(min(c2, max_channels) * width, 8)
+            args = [c1, c2, n] # put c1 where it belongs; c2 is then at the 1 index 
             n = 1
         elif m in frozenset(
             {Detect, WorldDetect, YOLOEDetect, Segment, YOLOESegment, Pose, OBB, ImagePoolingAttn, v10Detect}
