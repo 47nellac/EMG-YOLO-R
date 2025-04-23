@@ -81,6 +81,7 @@ class Conv(nn.Module):
         Returns:
             (torch.Tensor): Output tensor.
         """
+        print(f'Conv received {x.dim()}-size tensor')
         return self.act(self.bn(self.conv(x)))
 
     def forward_fuse(self, x):
@@ -686,6 +687,8 @@ class Concat(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
+        for t in x:
+            print(f'Concat received {t.dim()}-size tensor')        
         return torch.cat(x, self.d)
 
 class MAM(nn.Module):
@@ -741,6 +744,7 @@ class MAM(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
+        print(f'MAM received {x.dim()}-size tensor')
         alpha = self.dw1(x)
         beta = self.dw3(self.dw2(alpha)) + self.dw5(self.dw4(alpha)) + self.dw7(self.dw6(alpha)) + alpha
         print("End of MAM module") 
@@ -783,6 +787,7 @@ class EMCM(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
+        print(f'EMCM received {x.dim()}-size tensor')
         s = self.conv1(x).split((self.c_split, self.c_split, self.c_split, self.c_split), 1); # Split for 1x1, 3x3, 5x5, and 7x7 convolutions, probably very wrong
 
         print("End of EMCM module") 
@@ -828,6 +833,7 @@ class C2fEMCM(nn.Module):
         Returns:
             
         """
+        print(f'C2fEMCM received {x.dim()}-size tensor')
         alpha = self.conv1(x).split((self.c, self.c), 1) #based on C2f
         alpha = [alpha[0], alpha[1]]
         alpha.extend(emcm(alpha[-1]) for emcm in self.emcms)
@@ -872,6 +878,7 @@ class CSPStage(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
+        print(f'CSPStage received {x.dim()}-size tensor')
         concatlist = [self.conv1(x)]
         alpha = self.conv2(x)
         firstloop = self.conv3(self.repconv(alpha)) + alpha
