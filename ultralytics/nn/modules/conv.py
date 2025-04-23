@@ -860,10 +860,10 @@ class CSPStage(nn.Module):
         super().__init__()
         #c_ = c1 // 2 # Hidden channels (don't entirely understand how this works.)    
         self.numloops = numloops
-        self.conv1 = Conv(c1, c1, 1) # supposed to be 1x1, may be set up correctly now
-        self.conv2 = Conv(c1, c1, 1) # supposed to be 1x1
-        self.conv3 = Conv(c1, c1, 1) # supposed to be 1x1
-        self.repconv = RepConv(c1, c1, 3) # supposed to be 3x3
+        self.conv1 = Conv(c1, c2, 1) # supposed to be 1x1, may be set up correctly now
+        self.conv2 = Conv(c1, c2, 1) # supposed to be 1x1
+        self.conv3 = Conv(c2, c2, 1) # supposed to be 1x1
+        self.repconv = RepConv(c2, c2, 3) # supposed to be 3x3
         # tbh the two separate 1x1 convolutions seem redundant but w/e
         print(f'Initialized CSPStage module with i/o ({c1}, {c2})')
         
