@@ -69,7 +69,7 @@ class Conv(nn.Module):
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-        print(f'Initialized Conv module with i/o ({c1}, {c2})')
+        #print(f'Initialized Conv module with i/o ({c1}, {c2})')
 
     def forward(self, x):
         """
@@ -81,7 +81,7 @@ class Conv(nn.Module):
         Returns:
             (torch.Tensor): Output tensor.
         """
-        print(f'Conv received {x.size()}-size tensor')
+        #print(f'Conv received {x.size()}-size tensor')
         return self.act(self.bn(self.conv(x)))
 
     def forward_fuse(self, x):
@@ -422,7 +422,7 @@ class RepConv(nn.Module):
         self.bn = nn.BatchNorm2d(num_features=c1) if bn and c2 == c1 and s == 1 else None
         self.conv1 = Conv(c1, c2, k, s, p=p, g=g, act=False)
         self.conv2 = Conv(c1, c2, 1, s, p=(p - k // 2), g=g, act=False)
-        print(f'Initialized RepConv module with i/o ({c1}, {c2})')
+        #print(f'Initialized RepConv module with i/o ({c1}, {c2})')
 
     def forward_fuse(self, x):
         """
@@ -687,8 +687,8 @@ class Concat(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
-        for t in x:
-            print(f'Concat received {t.size()}-size tensor')        
+        #for t in x:
+        #    print(f'Concat received {t.size()}-size tensor')        
         return torch.cat(x, self.d)
 
 class MAM(nn.Module):
@@ -731,7 +731,7 @@ class MAM(nn.Module):
         # self.conv2d = nn.Conv2d(c_, c2, 7) # supposed to be a 7x7 Conv2d
         # self.sigmoid = nn.Sigmoid() # Sigmoid does not change the number of channels, so should be at *w/e* by conv2d
         self.spatialattn = SpatialAttention(7)
-        print(f'Initialized MAM module with i/o ({c1}, {c2})')
+        #print(f'Initialized MAM module with i/o ({c1}, {c2})')
         
     def forward(self, x):
         """
@@ -744,12 +744,12 @@ class MAM(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
-        print(f'MAM received {x.size()}-size tensor')
+        #print(f'MAM received {x.size()}-size tensor')
         alpha = self.dw1(x)
         beta = self.dw3(self.dw2(alpha)) + self.dw5(self.dw4(alpha)) + self.dw7(self.dw6(alpha)) + alpha
         #print("End of MAM module") 
         x_out = self.spatialattn(self.conv(beta) * alpha)
-        print(f'MAM returned {x_out.size()}-size tensor')
+        #print(f'MAM returned {x_out.size()}-size tensor')
         return x_out
 
 class EMCM(nn.Module):
@@ -777,7 +777,7 @@ class EMCM(nn.Module):
         self.conv5 = Conv(self.c_split, self.c_split, 7) # supposed to be 7x7 Conv
         
         self.mam = MAM(self.c, c2)
-        print(f'Initialized EMCM module with i/o ({c1}, {c2})')
+        #print(f'Initialized EMCM module with i/o ({c1}, {c2})')
 
     def forward(self, x):
         """
@@ -789,12 +789,12 @@ class EMCM(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
-        print(f'EMCM received {x.size()}-size tensor')
+        #print(f'EMCM received {x.size()}-size tensor')
         s = self.conv1(x).split((self.c_split, self.c_split, self.c_split, self.c_split), 1); # Split for 1x1, 3x3, 5x5, and 7x7 convolutions, probably very wrong
 
         #print("End of EMCM module") 
         x_out = self.mam(torch.cat((self.conv2(s[0]), self.conv3(s[1]), self.conv4(s[2]), self.conv5(s[3])), 1))
-        print(f'EMCM returned {x_out.size()}-size tensor')
+        #print(f'EMCM returned {x_out.size()}-size tensor')
         return x_out
 
 
@@ -822,9 +822,9 @@ class C2fEMCM(nn.Module):
         self.c = int(c2 * e) # Hidden channels (don't entirely understand how this works.)   
         self.conv1 = Conv(c1, 2 * self.c, 1, 1) # Copied from C2f
         self.conv2 = Conv((2 + numEMCM) * self.c, c2, 1) # based on C2f: each ECMCM + the original split input
-        print(numEMCM)
+        #print(numEMCM)
         self.emcms = nn.ModuleList(EMCM(self.c, self.c) for _ in range(numEMCM)) # based off of c2f
-        print(f'Initialized C2fEMCM module with i/o ({c1}, {c2})')
+        #print(f'Initialized C2fEMCM module with i/o ({c1}, {c2})')
         
 
     def forward(self, x):
@@ -837,13 +837,13 @@ class C2fEMCM(nn.Module):
         Returns:
             
         """
-        print(f'C2fEMCM received {x.size()}-size tensor')
+        #print(f'C2fEMCM received {x.size()}-size tensor')
         alpha = self.conv1(x).split((self.c, self.c), 1) #based on C2f
         alpha = [alpha[0], alpha[1]]
         alpha.extend(emcm(alpha[-1]) for emcm in self.emcms)
         #print("End of C2fEMCM module") 
         x_out = self.conv2(torch.cat(alpha, 1)) # put all the EMCMs back together again (???)
-        print(f'C2fEMCM returned {x_out.size()}-size tensor')
+        #print(f'C2fEMCM returned {x_out.size()}-size tensor')
         return x_out
 
 
@@ -875,7 +875,7 @@ class CSPStage(nn.Module):
         self.repconv = RepConv(cloop, cloop, 3) # supposed to be 3x3
         # tbh the two separate 1x1 convolutions seem redundant but w/e
         # update: there are two separate 1x1 convs because they have different outputs
-        print(f'Initialized CSPStage module with i/o ({c1}, {c2})')
+        #print(f'Initialized CSPStage module with i/o ({c1}, {c2})')
         
 
     def forward(self, x):
@@ -888,23 +888,21 @@ class CSPStage(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
-        print(f'CSPStage received {x.size()}-size tensor')
+        #print(f'CSPStage received {x.size()}-size tensor')
         concatlist = [self.conv1(x)]
         alpha = self.conv2(x)
-        print(f'CSPStage alpha is {alpha.size()}-size tensor')
-        firstloop = self.conv3(self.repconv(alpha)) + alpha
-        alpha = firstloop
-        print(f'CSPStage alpha is {alpha.size()}-size tensor')
+        #print(f'CSPStage alpha is {alpha.size()}-size tensor')
+        alpha = self.conv3(self.repconv(alpha)) + alpha
+        #print(f'CSPStage alpha is {alpha.size()}-size tensor')
         concatlist.append(alpha)
         for _ in range(self.numloops - 1): # Default to 1 total, may be more; n should be equal to num loops
-            firstloop = self.conv3(self.repconv(alpha)) + alpha
-            alpha = firstloop
-            print(f'CSPStage alpha is {alpha.size()}-size tensor')
+            alpha = self.conv3(self.repconv(alpha)) + alpha
+            #print(f'CSPStage alpha is {alpha.size()}-size tensor')
             concatlist.append(alpha)
     
         #print("End of CSPStage module") 
         x_out = torch.cat(concatlist, 1)
-        print(f'CSPStage returned {x_out.size()}-size tensor')
+        #print(f'CSPStage returned {x_out.size()}-size tensor')
         return x_out 
 
 class Index(nn.Module):
