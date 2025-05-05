@@ -17,7 +17,7 @@ scales: # model compound scaling constants, i.e. 'model=yolov8n.yaml' will call 
   l: [1.00, 1.00, 512] # YOLOv8l summary: 209 layers, 43691520 parameters, 43691504 gradients, 165.7 GFLOPS
   x: [1.00, 1.25, 512] # YOLOv8x summary: 209 layers, 68229648 parameters, 68229632 gradients, 258.5 GFLOPS
 
-# EMG-YOLO-R backbone
+# EMG-YOLO-M backbone
 backbone:
   # [from, repeats, module, args]						Resulting image resolution (input is 640x640)
   - [-1, 1, Conv, [64, 3, 2]] # 0-P1/2       				  	-> 320x320
@@ -32,7 +32,7 @@ backbone:
   - [-1, 1, SPPF, [1024, 5]] # 9						-> 20x20
   - [-1, 1, MAM, [512]] # 10     # new last piece of the backbone		-> 40x40
 
-# EMG-YOLO-R head
+# EMG-YOLO-M head
 head:
   - [-1, 1, Conv, [1024, 1]] # 11						-> 20x20 # This one is a 1x1 conv because it seems to need to be that
   - [6, 1, Conv, [1024, 3, 2]] # 12						-> 20x20
