@@ -28,7 +28,7 @@ backbone:
   - [-1, 1, Conv, [512, 3, 2]] # 5-P4/16					-> 40x40
   - [-1, 4, A2C2f, [512, True, 4]] # 6 # Changed C2F to C2F-EMCM to A2C2f	-> 40x40 * Change from emg-yolo-m
   - [-1, 1, Conv, [1024, 3, 2]] # 7-P5/32					-> 20x20
-  - [-1, 4, A2C2f, [1024, True, 4]] # 8 # Changed C2F to C2F-EMCM to A2C2f	-> 20x20 * Change from emg-yolo-m
+  - [-1, 4, A2C2f, [1024, True, 1]] # 8 # Changed C2F to C2F-EMCM to A2C2f	-> 20x20 * Change from emg-yolo-m
   - [-1, 1, SPPF, [1024, 5]] # 9						-> 20x20
   - [-1, 1, MAM, [512]] # 10     # new last piece of the backbone		-> 40x40
 
